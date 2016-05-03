@@ -79,7 +79,7 @@ function init() {
   ob = new THREE.Object3D();
   scene.add(ob);
   var loader = new THREE.ObjectLoader();
-loader.load("https://raw.githubusercontent.com/chaiche/hw/gh-pages/images/porsche-cayman-threejs/porsche-cayman.json",function ( obj ) {
+loader.load("../images/porsche-cayman-threejs/porsche-cayman.json",function ( obj ) {
      jsonModel = obj.clone();
      jsonModel.scale.set(10, 10, 10);
      jsonModel.position.set(70,0,0);

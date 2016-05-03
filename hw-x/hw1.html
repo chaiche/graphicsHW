@@ -1,0 +1,171 @@
+<!DOCTYPE html>
+
+<html>
+
+<head>
+<script src="../threejs_script/r70three.min.js"></script>
+<script src="../threejs_script/OrbitControls.js"></script>
+<script src="../threejs_script/jquery-2.1.4.min.js"></script>
+
+<style>
+#info {
+  position: absolute;
+  top: 2%;
+  width: 100%;
+  padding: 10px;
+  text-align: center;
+  color: #ffff00
+}
+
+body {
+  overflow: hidden;
+}
+
+
+</style>
+</head>
+
+<body> 
+<div id="info">HW1
+  <br/> 
+  <br/>
+  <br/>
+  <button id="toggle" style="width:20%">Toggle Turn</button>
+  <input id="chk" type="button" value="Analog" style="width:20%"/>
+
+</div>
+
+<script type="text/javascript">
+var scene, renderer, camera;
+var controls;
+var clockcircle, angle = 0, turn = false;
+
+var time = new THREE.Clock();
+var t=0;
+var now=1;
+var start=0, end = Math.PI/2;
+
+init();
+animate();
+
+$("#toggle").click(function() {
+  turn = !turn;
+});
+$("#chk").click(function() {
+	if(document.getElementById('chk').value=='Analog'){
+  	document.getElementById('chk').value='Quartz';
+    now=2;
+    var s=start,e=end;
+    end=0;start=Math.PI*2;
+    redraw();
+    start=s, end = e;
+  }
+  else if(document.getElementById('chk').value=='Quartz'){
+  	document.getElementById('chk').value='Sector';
+    now=3;
+    t=0;
+  }	else{
+  	document.getElementById('chk').value='Analog';
+    now=1;
+    redraw();
+  }
+});
+
+function init() {
+  scene = new THREE.Scene();
+  renderer = new THREE.WebGLRenderer();
+  renderer.setSize(window.innerWidth, window.innerHeight);
+  renderer.setClearColor(0x888888);
+  document.body.appendChild(renderer.domElement);
+
+  camera = new THREE.PerspectiveCamera(50, window.innerWidth / window.innerHeight, 1, 1000);
+  camera.position.z = 500;
+  controls = new THREE.OrbitControls(camera, renderer.domElement);
+
+  var geometry = new THREE.CircleGeometry(100,50);
+  var material = new THREE.MeshBasicMaterial({});
+	clockcircle = new THREE.Mesh(geometry, material);
+  scene.add(clockcircle);
+  
+  var geometry = new THREE.BoxGeometry(15,25,15);
+  var material = new THREE.MeshBasicMaterial({color:0xADFF2F});
+	paint1 = new THREE.Mesh(geometry, material);
+  paint1.position.set(0,95,0);
+  scene.add(paint1);
+  
+  var geometry = new THREE.CylinderGeometry(10, 10, 70, 32);
+  var material = new THREE.MeshBasicMaterial({color:0xFF3030});
+	paint2 = new THREE.Mesh(geometry, material);
+  paint2.position.set(0,30,0);
+
+  
+  var geometry = new THREE.CylinderGeometry(0, 20, 20, 32);
+  var material = new THREE.MeshBasicMaterial({color: 0xFF3030});
+	paint3 = new THREE.Mesh(geometry, material);
+  paint3.position.set(0,70,0);
+  
+  var geometry = new THREE.CircleGeometry(1,0);
+  var material = new THREE.MeshBasicMaterial({color: 0x000000});
+	all = new THREE.Mesh(geometry, material);
+  all.add(paint2);
+  all.add(paint3);
+  scene.add(all);
+  window.addEventListener('resize', onWindowResize, false);
+  
+}
+
+function onWindowResize() {
+  camera.aspect = window.innerWidth / window.innerHeight;
+  camera.updateProjectionMatrix();
+  renderer.setSize(window.innerWidth, window.innerHeight);
+}
+
+function animate() {
+	var a = time.getDelta();
+  controls.update();
+  if (turn){
+  	angle += Math.PI/30*a;
+    start+=Math.PI/30*a;
+  	end-=Math.PI/30*a;
+  }
+  
+  if(now==1){
+  	all.visible=false;
+    paint1.visible=false;
+    redraw();
+  }
+  else if(now==2){
+  	 all.visible=true;
+     paint1.visible=true;
+  	 all.rotation.z = -angle;
+  }
+  else if(now==3){
+  	t+=a;
+    if(t>1){
+    	all.rotation.z = -angle;
+      t=0;
+    }
+  }
+  if(end<=-Math.PI/2*3){
+ 			start=0, end = Math.PI/2;
+  }
+  
+  requestAnimationFrame(animate);
+  renderer.render(scene, camera);
+}
+function redraw(){
+	scene.remove(clockcircle);
+  var geometry = new THREE.CircleGeometry(100,50,end,start);
+  var material = new THREE.MeshBasicMaterial({});
+	clockcircle = new THREE.Mesh(geometry, material);
+  scene.add(clockcircle);
+}
+
+
+
+</script>
+
+
+</body>
+
+</html>

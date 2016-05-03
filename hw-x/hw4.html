@@ -1,0 +1,103 @@
+<!DOCTYPE html>
+
+<html>
+<meta charset="utf-8">
+
+<head>
+<script src="../threejs_script/r70three.min.js"></script>
+<script src="../threejs_script/OrbitControls.js"></script>
+<style>
+#info {
+  position: absolute;
+  top: 2%;
+  width: 100%;
+  padding: 10px;
+  text-align: center;
+  color: #ffff00
+}
+
+body {
+  overflow: hidden;
+}
+
+
+</style>
+</head>
+
+<body> 
+<div id="info">JSON Loader
+</div>
+<script type="text/javascript">
+var scene, renderer, camera;
+var controls;
+var jsonModel;
+
+init();
+animate();
+
+function init() {
+  var width = window.innerWidth;
+  var height = window.innerHeight;
+
+  renderer = new THREE.WebGLRenderer({
+    antialias: true
+  });
+  renderer.setSize(width, height);
+  renderer.setClearColor (0x888888);
+  document.body.appendChild(renderer.domElement);
+
+  scene = new THREE.Scene();
+
+  camera = new THREE.PerspectiveCamera(45, width / height, 0.1, 10000);
+  camera.position.set (0,32,80);
+  camera.lookAt(new THREE.Vector3(0, 0, 0));
+
+  controls = new THREE.OrbitControls(camera, renderer.domElement);
+
+  var gridXZ = new THREE.GridHelper(100, 10);
+  gridXZ.setColors(new THREE.Color(0xff0000), new THREE.Color(0xffffff));
+  scene.add(gridXZ);
+
+  var pointLight = new THREE.PointLight(0xffffff);
+  pointLight.position.set(0, 300, 200);
+  scene.add(pointLight);
+  var ambientLight = new THREE.AmbientLight(0x111111);
+  scene.add(ambientLight);
+  
+  
+  //var jsonLoader = new THREE.JSONLoader();
+  //var url = "http://threejs.org/examples/obj/Suzanne.js";
+  //var url = "https://raw.githubusercontent.com/chaiche/hw/master/images/porsche-cayman-threejs/porsche-cayman.json";
+  //jsonLoader.load(url, function(geometry, materials) {
+    //var material = new THREE.MeshFaceMaterial(materials);
+   // jsonModel = new THREE.Mesh(geometry, material);
+    //jsonModel.scale.set(4, 4, 4);
+   // jsonModel.length = 4;
+    //scene.add(jsonModel);
+  
+  //});
+  ob = new THREE.Object3D();
+  scene.add(ob);
+  var loader = new THREE.ObjectLoader();
+loader.load("https://raw.githubusercontent.com/chaiche/hw/gh-pages/images/porsche-cayman-threejs/porsche-cayman.json",function ( obj ) {
+     jsonModel = obj.clone();
+     jsonModel.scale.set(10, 10, 10);
+     jsonModel.position.set(70,0,0);
+     ob.add(jsonModel);
+});
+}
+
+function animate() {
+  requestAnimationFrame(animate);
+  
+  ob.rotation.y +=0.017;
+  controls.update();
+  renderer.render(scene, camera);
+}
+</script>
+
+
+
+</body>
+
+</html>

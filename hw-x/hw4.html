@@ -25,7 +25,8 @@ body {
 </head>
 
 <body> 
-<div id="info">JSON Loader
+<div id="info">HW4
+<br>car: <a href="https://clara.io/view/a4faf9a7-b1df-42e3-97ca-5b3793bfd129">url</a> tree: <a href="https://clara.io/view/46e150e2-4dff-41a7-bb68-ce7437cc219a">url</a>
 </div>
 <script type="text/javascript">
 var scene, renderer, camera;
@@ -64,18 +65,9 @@ function init() {
   var ambientLight = new THREE.AmbientLight(0x111111);
   scene.add(ambientLight);
   
+  THREE.ImageUtils.crossOrigin = '';
   
-  //var jsonLoader = new THREE.JSONLoader();
-  //var url = "http://threejs.org/examples/obj/Suzanne.js";
-  //var url = "https://raw.githubusercontent.com/chaiche/hw/master/images/porsche-cayman-threejs/porsche-cayman.json";
-  //jsonLoader.load(url, function(geometry, materials) {
-    //var material = new THREE.MeshFaceMaterial(materials);
-   // jsonModel = new THREE.Mesh(geometry, material);
-    //jsonModel.scale.set(4, 4, 4);
-   // jsonModel.length = 4;
-    //scene.add(jsonModel);
   
-  //});
   ob = new THREE.Object3D();
   scene.add(ob);
   var loader = new THREE.ObjectLoader();
@@ -85,15 +77,51 @@ loader.load("https://raw.githubusercontent.com/chaiche/graphicsHW/gh-pages/image
      jsonModel.position.set(70,0,0);
      ob.add(jsonModel);
 });
+
+  
+loader.load("https://raw.githubusercontent.com/chaiche/graphicsHW/gh-pages/models/tree.json",function ( obj ) {
+     aa = obj.clone();
+     aa.scale.set(0.5, 0.5, 0.5);
+     aa.position.set(0,0,0);
+     scene.add(aa);
+});
+
+  var geometry = new THREE.CylinderGeometry( 1, 1, 8, 32 );
+  var material = new THREE.MeshBasicMaterial( {color: 0x9F5000} );
+  var cylinder = new THREE.Mesh( geometry, material );
+  cylinder.position.set(-30,4,10);
+  scene.add( cylinder );
+  
+  var box = makebox();
+  box.position.set(0,9,0);
+  cylinder.add(box);
 }
 
 function animate() {
-  requestAnimationFrame(animate);
+  controls.update();
   
   ob.rotation.y +=0.017;
-  controls.update();
+  
+  requestAnimationFrame(animate);
   renderer.render(scene, camera);
 }
+
+function makebox() {
+  var materials = [];
+  // must give 6 materials for box geometry
+  materials.push(new THREE.MeshLambertMaterial({color: 0x9F5000}));
+  materials.push(new THREE.MeshLambertMaterial({color: 0x9F5000}));
+  materials.push(new THREE.MeshLambertMaterial({color: 0x9F5000}));
+  materials.push(new THREE.MeshLambertMaterial({color: 0x9F5000}));
+  //this side
+  materials.push(new THREE.MeshBasicMaterial({map: THREE.ImageUtils.loadTexture('../images/picture.jpg')}));
+  materials.push(new THREE.MeshLambertMaterial({color: 0x9F5000}));
+  
+  box = new THREE.Mesh(new THREE.BoxGeometry(10,10, 1),
+                       new THREE.MeshFaceMaterial(materials));
+  return box;
+}
+
 </script>
 
 

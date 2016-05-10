@@ -139,6 +139,7 @@ function init() {
   gcontrols = new function() {
     this.shading = 'per-vertex';
     this.coordinate = 'object';
+    this.floorMaterial = 'lambert';
   }
 
   var gui = new dat.GUI();
@@ -149,6 +150,8 @@ function init() {
   f1.add (gcontrols, 'coordinate', ['object', 'world', 'eye']);
   var f2 = gui.addFolder('Shading Computation');
   f2.add (gcontrols, 'shading', ['per-vertex', 'per-pixel']);
+  var f3 = gui.addFolder("floorMaterial");
+  f3.add (gcontrols, 'floorMaterial', ['lambert', 'phong']);
 
 /////////////////////////////////////////////////////////////////
   teapotMaterial = new THREE.ShaderMaterial({
@@ -162,39 +165,78 @@ function init() {
   });
 
   var jsonLoader = new THREE.JSONLoader();
-  var url = "../models/teapot.json";
+  var url = "https://raw.githubusercontent.com/chaiche/graphicsHW/master/models/teapot.json";
   jsonLoader.load(url, function(geometry, materials) {
     //var material = new THREE.MeshFaceMaterial(materials);
     jsonModel = new THREE.Mesh(geometry, teapotMaterial);
     jsonModel.scale.set(10, 10, 10);
   	jsonModel.castShadow = true;
   	jsonModel.receiveShadow = true;
+    jsonModel.traverse (
+    function (mesh) {
+      if (mesh instanceof THREE.Mesh) {
+        mesh.castShadow = true;
+        mesh.receiveShadow = true; 
+      }
+    }
+  );
     scene.add(jsonModel);
 //    jsonModel.position.set(70, 0, 0);
 
     jsonModel2 = jsonModel.clone();
     jsonModel2.position.set(70, 0, 0);
+    jsonModel2.castShadow = true;
+    jsonModel2.receiveShadow = true;
+    jsonModel2.traverse (
+    function (mesh) {
+      if (mesh instanceof THREE.Mesh) {
+        mesh.castShadow = true;
+        mesh.receiveShadow = true; 
+      }
+    }
+  );
     jsonModel.material = new THREE.MeshLambertMaterial();
     scene.add(jsonModel2);
 
   });
 
   var geometry = new THREE.PlaneGeometry(400, 400, 130, 130);
-  var LambertMat = new THREE.MeshLambertMaterial();
-  var PhongMat = new THREE.MeshPhongMaterial();
-  var floor = new THREE.Mesh(geometry,LambertMat);
+  LambertMat = new THREE.MeshLambertMaterial();
+  PhongMat = new THREE.MeshPhongMaterial();
+  floor = new THREE.Mesh(geometry,LambertMat);
   floor.rotation.x = -Math.PI / 2;
   scene.add(floor);
   //scene.add(new THREE.AmbientLight(0x440000));
-  
+  ///////////////////////
+  //test
+  // var cubeMesh = new THREE.Mesh (new THREE.BoxGeometry(10,10,10), new THREE.MeshLambertMaterial());
+  // var cubeGroup = new THREE.Object3D();
+  // cubeGroup.add (cubeMesh);
+  // cubeMesh.position.set (-50, 50,0);
+  // var cubeMesh2 = cubeMesh.clone();
+  // cubeMesh2.position.set (100,30,0);
+  // cubeGroup.add (cubeMesh2);
+  // scene.add (cubeGroup);
+  // cubeGroup.castShadow = true;  // wont work
+  // cubeGroup.receiveShadow = true;
+  // cubeGroup.traverse (
+  //   function (mesh) {
+  //     if (mesh instanceof THREE.Mesh) {
+  //       mesh.castShadow = true;
+  //       mesh.receiveShadow = true; 
+  //     }
+  //   }
+  // );
 
+// soft red ambient
+  scene.add(new THREE.AmbientLight(0x440000));
   ///////////////////////////////////////////////////////////
   // spotlight
   light1 = new THREE.SpotLight(0xffff00, 1.5);
   light1.position.set(0, 150, 0);
   light1.angle = Math.PI/4;
   light1.exponent = 10;
-  //light1.target = mesh2;
+  //light1.target = jsonModel2;
   scene.add(light1);
 
   // shadow map settings
@@ -207,24 +249,27 @@ function init() {
 
 
   // directional light
-  // light2 = new THREE.DirectionalLight(0xffff00);
-  // light2.position.set(200, 100, 0);
-  // light2.castShadow = true;
-  // light2.shadowCameraLeft = -80;
-  // light2.shadowCameraTop = -80;
-  // light2.shadowCameraRight = 80;
-  // light2.shadowCameraBottom = 8s0;
-  // light2.shadowCameraNear = 1;
-  // light2.shadowCameraFar = 1000;
-  // light2.shadowBias = -.0001
-  // light2.shadowMapWidth = light2.shadowMapHeight = 1024;
-  // light2.shadowDarkness = .7;
-  // scene.add(light2);
+  light2 = new THREE.DirectionalLight(0xffff00);
+  light2.position.set(200, 100, 0);
+  light2.castShadow = true;
+  light2.shadowCameraLeft = -80;
+  light2.shadowCameraTop = -80;
+  light2.shadowCameraRight = 80;
+  light2.shadowCameraBottom = 80;
+  light2.shadowCameraNear = 1;
+  light2.shadowCameraFar = 1000;
+  light2.shadowBias = -.0001
+  light2.shadowMapWidth = light2.shadowMapHeight = 1024;
+  light2.shadowDarkness = .7;
+  scene.add(light2);
 
   renderer.shadowMapEnabled = true;
   renderer.shadowMapType = THREE.PCFShadowMap;
 
   floor.receiveShadow = true;
+
+
+  
 
 
 }
@@ -266,6 +311,18 @@ function animate() {
   	}
   	default:break;
   }
+  switch(gcontrols.floorMaterial){
+    case 'lambert':{
+      floor.material = LambertMat;
+      break;
+    }
+    case 'phong': {
+      floor.material = PhongMat;
+      break;
+    }
+    default:break;
+  }
+
   //console.log(gcontrols.coordinate);
   requestAnimationFrame(animate);
   controls.update();

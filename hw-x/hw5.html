@@ -79,7 +79,7 @@ body {
 
 <script id="myFragmentShader" type="x-shader/x-fragment">
   	
-  	varying vec3 color;
+  varying vec3 color;
 	varying vec4 pos;
 	varying float which;
 
@@ -172,14 +172,8 @@ function init() {
     jsonModel.scale.set(10, 10, 10);
   	jsonModel.castShadow = true;
   	jsonModel.receiveShadow = true;
-    jsonModel.traverse (
-    function (mesh) {
-      if (mesh instanceof THREE.Mesh) {
-        mesh.castShadow = true;
-        mesh.receiveShadow = true; 
-      }
-    }
-  );
+    
+  
     scene.add(jsonModel);
 //    jsonModel.position.set(70, 0, 0);
 
@@ -187,14 +181,8 @@ function init() {
     jsonModel2.position.set(70, 0, 0);
     jsonModel2.castShadow = true;
     jsonModel2.receiveShadow = true;
-    jsonModel2.traverse (
-    function (mesh) {
-      if (mesh instanceof THREE.Mesh) {
-        mesh.castShadow = true;
-        mesh.receiveShadow = true; 
-      }
-    }
-  );
+    
+  
     jsonModel.material = new THREE.MeshLambertMaterial();
     scene.add(jsonModel2);
 
@@ -228,6 +216,24 @@ function init() {
   //   }
   // );
 
+  lampGroup = new THREE.Object3D();
+  var ly = 150,
+    rt = 30,
+    h = 40,
+    alpha = Math.PI / 4;
+  var rb = rt + h * Math.tan(alpha);
+  var geometry = new THREE.CylinderGeometry(rt, rb, h, 20, 1, true);
+  var material = new THREE.MeshBasicMaterial({
+    side: THREE.DoubleSide,
+    //wireframe: true,
+    color: 0xffff00
+  });
+  lamp = new THREE.Mesh(geometry, material);
+  lamp.rotation.x = -Math.PI / 2;
+  //lamp.lookAt(0,0,0);
+  lampGroup.add(lamp);
+  scene.add(lampGroup);
+  
 // soft red ambient
   scene.add(new THREE.AmbientLight(0x440000));
   ///////////////////////////////////////////////////////////
@@ -236,7 +242,7 @@ function init() {
   light1.position.set(0, 150, 0);
   light1.angle = Math.PI/4;
   light1.exponent = 10;
-  //light1.target = jsonModel2;
+  light1.lookAt(new THREE.Vector3(0,0,0));
   scene.add(light1);
 
   // shadow map settings
@@ -249,27 +255,27 @@ function init() {
 
 
   // directional light
-  light2 = new THREE.DirectionalLight(0xffff00);
-  light2.position.set(200, 100, 0);
-  light2.castShadow = true;
-  light2.shadowCameraLeft = -80;
-  light2.shadowCameraTop = -80;
-  light2.shadowCameraRight = 80;
-  light2.shadowCameraBottom = 80;
-  light2.shadowCameraNear = 1;
-  light2.shadowCameraFar = 1000;
-  light2.shadowBias = -.0001
-  light2.shadowMapWidth = light2.shadowMapHeight = 1024;
-  light2.shadowDarkness = .7;
-  scene.add(light2);
+  // light2 = new THREE.DirectionalLight(0xffff00);
+  // light2.position.set(200, 100, 0);
+  // light2.castShadow = true;
+  // light2.shadowCameraLeft = -80;
+  // light2.shadowCameraTop = -80;
+  // light2.shadowCameraRight = 80;
+  // light2.shadowCameraBottom = 80;
+  // light2.shadowCameraNear = 1;
+  // light2.shadowCameraFar = 1000;
+  // light2.shadowBias = -.0001
+  // light2.shadowMapWidth = light2.shadowMapHeight = 1024;
+  // light2.shadowDarkness = .7;
+  // scene.add(light2);
 
   renderer.shadowMapEnabled = true;
   renderer.shadowMapType = THREE.PCFShadowMap;
 
   floor.receiveShadow = true;
 
-
   
+  lampGroup.position.copy(light1.position);
 
 
 }
@@ -281,6 +287,10 @@ function animate() {
   
   if (jsonModel2 !== undefined) {
 		jsonModel2.position.set (70*Math.cos(angle), 0, 70*Math.sin(angle));
+    light1.position.set(150*Math.cos(angle),150, 150*Math.sin(angle));
+    lampGroup.position.copy(light1.position);
+    lampGroup.lookAt(jsonModel.position);
+    //lamp.position.set(100*Math.cos(angle),100, 100*Math.sin(angle));
   }
   
   //gcontrols.coordinate

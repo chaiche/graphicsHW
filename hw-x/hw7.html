@@ -78,23 +78,7 @@ var pointLight;
 var scene, sceneRTT, rtTexture, torus;
 var rttmaterial, quad;
 var camera2;
-var quads = [];
-var Plane = function (mesh,x) {
-    this.mesh = mesh;
-    this.turn = false;
-    this.fadevalue = 0.0;
-    this.x = x;
-};
-Plane.prototype.update = function (x) {
-    if (this.turn) {
-    console.log('1');
-       this.mesh.material.uniforms.fade.value = (5.0-this.fadevalue)/5.0;
-       if(this.fadevalue<5.0)this.fadevalue+=0.01;
-    }
-    else{
-      if(this.x < x) this.turn =true;
-    }
-};
+
 
 init();
 animate();
@@ -130,37 +114,114 @@ function init()
   // render a torus to texture
   // then apply the texture to a quad,
   // with a monochrome filter
-  
-  sceneRTT = new THREE.Scene(); 
+
+  //other scene object
+  sceneRTT = new THREE.Scene();
   pointLight = new THREE.PointLight (0xffffff);
   pointLight.position.set (0,300,200);
   sceneRTT.add (pointLight);
-
-  torus = new THREE.Mesh (new THREE.TorusGeometry(10, 3, 16, 100),
-  new THREE.MeshLambertMaterial({color:0xff1234}));
-  torus.scale.set (10,10,10);
-  torus.rotation.x = Math.PI/2;
-  sceneRTT.add (torus);
   
-  column1 = new THREE.Mesh(new THREE.BoxGeometry(40, 40, 40),
-    new THREE.MeshLambertMaterial({
-      color: 0x00f2f2
-    }));
-  column1.position.set(100,-15,100);
-  sceneRTT.add(column1);
-
-  column2 = column1.clone();
-  column2.position.set(100,-15,-100);
-  sceneRTT.add(column2);
-
-  column3 = column1.clone();
-  column3.position.set(-100,-15,-100);
-  sceneRTT.add(column3);
-
-  column4 = column1.clone();
-  column4.position.set(-100,-15,100);
-  sceneRTT.add(column4);
- 
+  var other_column = [];
+  for(var i=0;i<10;i++){
+    
+      other_column[i] = new THREE.Mesh(new THREE.BoxGeometry(20, 50, 20),
+      new THREE.MeshBasicMaterial({
+        color: 0xff1234
+      }));
+      other_column[i].position.x = -100 + i * 30;
+      sceneRTT.add(other_column[i]);
+    
+  }
+  var other_column1 = [];
+  for(var i=0;i<10;i++){
+    
+      other_column1[i] = new THREE.Mesh(new THREE.BoxGeometry(20, 50, 20),
+      new THREE.MeshBasicMaterial({
+        color: 0x1234ff
+      }));
+      other_column1[i].position.y = 70;
+      other_column1[i].position.x = -100 + i * 30;
+      sceneRTT.add(other_column1[i]);
+    
+  }
+  var other_column2 = [];
+  for(var i=0;i<10;i++){
+    
+      other_column2[i] = new THREE.Mesh(new THREE.BoxGeometry(20, 50, 20),
+      new THREE.MeshBasicMaterial({
+        color: 0x12ff34
+      }));
+      other_column2[i].position.y = -70;
+      other_column2[i].position.x = -100 + i * 30;
+      sceneRTT.add(other_column2[i]);
+    
+  }
+  
+  // MainObject
+  scene_Main = new THREE.Scene();
+  pointLight = new THREE.PointLight(0xffffff);
+  pointLight.position.set(0, 300, 200);
+  scene_Main.add(pointLight);
+  
+  main_column = new THREE.Mesh(new THREE.BoxGeometry(20, 75, 20),
+      new THREE.MeshBasicMaterial({
+        color: 0xff1234
+      }));
+  main_column.position.z = 50;   
+  scene_Main.add(main_column);
+  main_column2 = new THREE.Mesh(new THREE.BoxGeometry(20, 75, 20),
+                               new THREE.MeshBasicMaterial({
+    color: 0x1234ff
+  }));
+  main_column2.position.y = 70 ; 
+  main_column2.position.z = 100;
+  scene_Main.add(main_column2);
+  main_column3 = new THREE.Mesh(new THREE.BoxGeometry(20, 75, 20),
+                               new THREE.MeshBasicMaterial({
+    color: 0x12ff34
+  }));
+  main_column3.position.y = -70 ; 
+  main_column3.position.z = -100 ;
+  scene_Main.add(main_column3);
+  
+  //other scene object block
+  scene_Block = new THREE.Scene();
+  var block_column = [];
+  for(var i=0;i<10;i++){
+      block_column[i] = new THREE.Mesh(new THREE.BoxGeometry(20, 50, 20),
+      new THREE.MeshBasicMaterial({
+        colorWrite: false
+      }));
+      block_column[i].position.x = -100 + i * 30;
+      scene_Block.add(block_column[i]);
+    
+  }
+  var block_column1 = [];
+  for(var i=0;i<10;i++){
+    
+      block_column1[i] = new THREE.Mesh(new THREE.BoxGeometry(20, 50, 20),
+      new THREE.MeshBasicMaterial({
+        colorWrite: false
+      }));
+      block_column1[i].position.y = 70;
+      block_column1[i].position.x = -100 + i * 30;
+      scene_Block.add(block_column1[i]);
+    
+  }
+  var block_column2 = [];
+  for(var i=0;i<10;i++){
+    
+      block_column2[i] = new THREE.Mesh(new THREE.BoxGeometry(20, 50, 20),
+      new THREE.MeshBasicMaterial({
+        colorWrite: false
+      }));
+      block_column2[i].position.y = -70;
+      block_column2[i].position.x = -100 + i * 30;
+      scene_Block.add(block_column2[i]);
+    
+  }
+  
+  //plane scene
   scene = new THREE.Scene();
   rttmaterial = new THREE.ShaderMaterial( {
     uniforms: {
@@ -168,31 +229,25 @@ function init()
       fade: {type: "f", value: 3.0},
     },
     vertexShader: document.getElementById( 'myVertexShader' ).textContent,
-    fragmentShader: document.getElementById( 'myFragmentShader' ).textContent}
+    fragmentShader: document.getElementById( 'myFragmentShader' ).textContent,
     
-    );
+    });
   rttmaterial.side = THREE.DoubleSide;
-  
+  rttmaterial.depthWrite = false;
  
   var plane = new THREE.PlaneGeometry( 500,500 );
   quad = new THREE.Mesh (plane, rttmaterial);
-
   scene.add (quad);
-  quads.push(new Plane(quad,-200));
   
-  quad2 = quad.clone();
-  quad2.position.x = 500;
-  scene.add (quad2);
+  //quads.push(new Plane(quad,-200));
+  
+  //quad2 = quad.clone();
+  //quad2.position.x = 500;
+  //scene.add (quad2);
  
-  quads.push(new Plane(quad,300));
+ // quads.push(new Plane(quad,300));
   
-  console.log(quads.length);
-  column = new THREE.Mesh(new THREE.BoxGeometry(20, 50, 20),
-    new THREE.MeshBasicMaterial({
-      color: 0xff1234
-    }));
-  scene.add(column);
-  
+  //console.log(quads.length);
   
   color={
     fade: 0.5,
@@ -227,6 +282,7 @@ function animate()
   renderer.render (sceneRTT, camera, rtTexture,true);
   
   renderer.setClearColor (0x008888);
+  
   renderer.render (scene, camera2);
   
   // rtTexture2 has monochorme torus
@@ -235,12 +291,11 @@ function animate()
   // render the colored inside cylinder.
   //?? can I disable color buffer output
   //renderer.render (sceneFinal, camera);
+  renderer.setClearColor (0x888888);
+  
+  renderer.render(scene_Block, camera);
+  renderer.render(scene_Main, camera);
 
-}
-function update(x) {
-  for (var i = 0; i < quads.length; i++) {
-    quads[i].update(x);
-  }
 }
 </script>
 
